@@ -44,8 +44,9 @@
 #
 # pflogin - pfSense login
 #
-# Most options are intuitive for logging into a Cisco router.
-# The default username password is the same as the vty password.
+# This is a total hack to make this grab some system basics and the 
+# config from a pfsense router / firewall device
+# 
 #
 
 # Usage line
@@ -71,8 +72,6 @@ set do_passwd 1
 set do_saveconfig 0
 # Sometimes routers take awhile to answer (the default is 10 sec)
 set timeoutdflt 120
-
-#set prompt "# "
 
 # Find the user in the ENV, or use the unix userid.
 if {[ info exists env(CISCO_USER) ]} {
@@ -379,7 +378,7 @@ proc login { router user passwd cmethod cyphertype identfile} {
 			  send_user "\nError: Check your password for $router\n"
 			  catch {close}; catch {wait}; return 1
 			}
-	    -re "Enter passphrase.*: " {
+	    -re "Password for.*: " {
 		# sleep briefly to allow time for stty -echo
 		sleep 1
 		send -- "$passphrase\r"
@@ -512,8 +511,7 @@ foreach router [lrange $argv $i end] {
       set cyphertype $cypher
     } else {
       set cyphertype [find cyphertype $router]
-      #if { "$cyphertype" == "" } { set cyphertype "3des" }
-      if { "$cyphertype" == "" } { set cyphertype "arcfour256" }
+      if { "$cyphertype" == "" } { set cyphertype "aes256-cbc" }
     }
 
     # Figure out connection method
